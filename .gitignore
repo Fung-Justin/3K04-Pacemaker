@@ -1,0 +1,20 @@
+# MATLAB autosaves and backups
+*.asv
+*.m~  
+*.slxc
+*.slxp
+*.mex*
+
+# Simulink cache + build files
+slprj/
+sccprj/
+*.slxc
+*.autosave
+
+# Workspace data
+*.mat
+*.fig
+
+# OS junk
+.DS_Store
+Thumbs.db
