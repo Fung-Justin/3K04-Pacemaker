@@ -4,6 +4,7 @@ from page_welcome import WelcomePage
 from page_login import LoginPage
 from page_register import RegisterPage
 from core.users import UserStore
+from page_dashboard import DashboardPage
 
 class UIShell(QtWidgets.QMainWindow):
     def __init__(self):
@@ -22,9 +23,10 @@ class UIShell(QtWidgets.QMainWindow):
         self.welcome_page = WelcomePage()
         self.login_page = LoginPage()
         self.register_page = RegisterPage()
+        self.dashboard_page = DashboardPage()
 
         # Add to stack
-        for p in (self.welcome_page, self.login_page, self.register_page):
+        for p in (self.welcome_page, self.login_page, self.register_page, self.dashboard_page):
             self.stack.addWidget(p)
         self.stack.setCurrentWidget(self.welcome_page)
 
@@ -40,7 +42,13 @@ class UIShell(QtWidgets.QMainWindow):
         self.register_page.backClicked.connect(lambda: (self.register_page.reset_form(), self.goto(self.welcome_page)))
         self.register_page.registerRequested.connect(self.handle_register)
 
+        # Save Signal - Dashboard
+        self.dashboard_page.paramsSaved.connect(self._on_params_saved)
+
         self.status_toolbar = None
+
+    def _on_params_saved(self, mode, params):
+        print(f"[DEBUG] Saved {mode} -> {params}")
 
     def create_top_toolbar(self, username: str):
         """Creates a top toolbar with 'Logged in as ...' (left) and Logout (right)."""
@@ -234,6 +242,8 @@ class UIShell(QtWidgets.QMainWindow):
             self.create_status_toolbar()
             self.reveal_toolbar(self.top_toolbar)
             self.reveal_toolbar(self.status_toolbar)
+
+            self.goto(self.dashboard_page)
 
             # TODO: self.goto(self.dashboard_page)
         else:
