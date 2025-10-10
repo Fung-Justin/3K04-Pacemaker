@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "username_hash": "87cb72274490899996aadcd1042a280fbc1e16ba62562860d398bce5e7613a79",
+      "pw_hash": "7012ae437590d47f1113934f9230c23b7a3c87960290fc14b40658968fa91fd3",
+      "salt_user": "0ed8e57a57bc3be2659a3f6871a6edbb",
+      "salt_pw": "9918f56a120aec76f0d43f7ebd6d9573"
+    }
+  ]
+}
