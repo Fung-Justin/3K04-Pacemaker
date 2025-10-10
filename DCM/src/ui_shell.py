@@ -5,6 +5,7 @@ from page_login import LoginPage
 from page_register import RegisterPage
 from core.users import UserStore
 from page_dashboard import DashboardPage
+from core.egram import EgramData
 
 class UIShell(QtWidgets.QMainWindow):
     def __init__(self):
@@ -24,6 +25,7 @@ class UIShell(QtWidgets.QMainWindow):
         self.login_page = LoginPage()
         self.register_page = RegisterPage()
         self.dashboard_page = DashboardPage()
+        self.egram_data = EgramData()
 
         # Add to stack
         for p in (self.welcome_page, self.login_page, self.register_page, self.dashboard_page):
