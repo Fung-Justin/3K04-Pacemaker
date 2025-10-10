@@ -21,7 +21,10 @@ LINE_STYLE = """
         background-color: rgba(255,255,255,0.18);
         color: white;
         border: 1px solid rgba(255,255,255,0.35);
-        border-radius: 10px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 0px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 0px;
         padding: 6px 10px;
         selection-background-color: rgba(255,255,255,0.35);
         selection-color: #111;
@@ -42,16 +45,17 @@ class DashboardPage(QtWidgets.QWidget):
         super().__init__()
         self.setObjectName("background-image")
         self.setStyleSheet("""
-            #background-image {
-                background: qlineargradient
-                           x1:0, y1:0, x2:1, y2:1,
-                           stop:0 #ff9a9e,
-                           stop:0.25 #fad0c4,
-                           stop:0.5 #fbc2eb,
-                           stop:0.75 #a1c4fd,
-                           stop:1, #c2e9fb
-                           );
-            }
+        #background-image {
+            background: 
+                qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #e3868a,
+                    stop:0.25 #e3baaf,
+                    stop:0.5 #e3acd4,
+                    stop:0.75 #91b1e6,
+                    stop:1 #abcfe0
+                );
+        }
         """)
 
         # Title of the dahsboard page

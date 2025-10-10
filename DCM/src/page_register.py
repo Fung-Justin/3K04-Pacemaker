@@ -42,14 +42,15 @@ class RegisterPage(QtWidgets.QWidget):
         self.setObjectName("background-image")
         self.setStyleSheet("""
             #background-image {
-                background: qlineargradient(
-                    x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #ff9a9e,
-                    stop:0.25 #fad0c4,
-                    stop:0.5 #fbc2eb,
-                    stop:0.75 #a1c4fd,
-                    stop:1 #c2e9fb
-                );
+                background: 
+                    qlineargradient(
+                        x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #e3868a,
+                        stop:0.25 #e3baaf,
+                        stop:0.5 #e3acd4,
+                        stop:0.75 #91b1e6,
+                        stop:1 #abcfe0
+                    );
             }
         """)
 
