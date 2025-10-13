@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
-import typing as t
+from dataclasses import dataclass, field # for easy data storage
+import typing as t # for type hints
 
-@dataclass
-class EgramData:
-    time: t.List[float] = field(default_factory=list)
-    atrial: t.List[float] = field(default_factory=list)
-    ventricular: t.List[float] = field(default_factory=list)
+@dataclass # simple class to hold egram data
+class EgramData: # ECG data structure
+    time: t.List[float] = field(default_factory=list) # time points
+    atrial: t.List[float] = field(default_factory=list) # atrial signal
+    ventricular: t.List[float] = field(default_factory=list) # ventricular signal
     sampling_rate: float = 100.0 # Hz Placeholder for now
-    timestamp: str = ""
+    timestamp: str = "" # when data was recorded
     

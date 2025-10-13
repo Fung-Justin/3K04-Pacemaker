@@ -1,11 +1,11 @@
-import sys
+import sys 
 from PySide6 import QtWidgets
-from ui_shell import UIShell
+from ui_shell import UIShell # main UI shell
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    widget = UIShell()
-    widget.setObjectName("background-image")
+if __name__ == "__main__": # main entry point
+    app = QtWidgets.QApplication([]) # create application
+    widget = UIShell() # main UI shell
+    widget.setObjectName("background-image") # for styling
     widget.setStyleSheet("""
         #background-image {
             background: 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
                     stop:1 #abcfe0
                 );
         }
-    """)
-    widget.resize(800, 600)
-    widget.show()
-    sys.exit(app.exec())
+    """) # gradient background
+    widget.resize(800, 600) # initial size
+    widget.show() # show the UI
+    sys.exit(app.exec()) # start event loop and exit on close
