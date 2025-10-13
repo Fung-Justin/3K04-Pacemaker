@@ -1,5 +1,5 @@
 from PySide6 import QtCore, QtWidgets, QtGui
-
+# Styles
 LINE_EDIT_STYLE = """
 QLineEdit {
     background-color: rgba(255,255,255,0.18);
@@ -33,13 +33,13 @@ QPushButton:hover { background-color: rgba(255,255,255,0.30); }
 QPushButton:pressed { background-color: rgba(255,255,255,0.38); }
 """
 
-class LoginPage(QtWidgets.QWidget):
-    backClicked = QtCore.Signal()
-    loginRequested = QtCore.Signal(str, str)
+class LoginPage(QtWidgets.QWidget): # Login page for existing users
+    backClicked = QtCore.Signal() # signal for back button
+    loginRequested = QtCore.Signal(str, str) # username, password
 
-    def __init__(self):
-        super().__init__()
-        self.setObjectName("background-image")
+    def __init__(self): # Initialize the login page
+        super().__init__() # call parent constructor
+        self.setObjectName("background-image") # for styling
         self.setStyleSheet("""
         #background-image {
             background: 
@@ -52,75 +52,75 @@ class LoginPage(QtWidgets.QWidget):
                     stop:1 #abcfe0
                 );
         }
-        """)
+        """) # gradient background
 
-        # ---- Title
-        title = QtWidgets.QLabel("Login", alignment=QtCore.Qt.AlignCenter)
-        title.setStyleSheet("color: white;")
-        title.setFont(QtGui.QFont("Helvetica Neue", 28, QtGui.QFont.Bold))
+        # Title
+        title = QtWidgets.QLabel("Login", alignment=QtCore.Qt.AlignCenter) # title label
+        title.setStyleSheet("color: white;") # white text
+        title.setFont(QtGui.QFont("Helvetica Neue", 28, QtGui.QFont.Bold)) # large bold font
 
-        # ---- Inputs
-        self.username = QtWidgets.QLineEdit()
-        self.username.setPlaceholderText("Username")
-        self.username.setMaximumWidth(360)
-        self.username.setStyleSheet(LINE_EDIT_STYLE)
+        # Inputs
+        self.username = QtWidgets.QLineEdit() # username input
+        self.username.setPlaceholderText("Username") # placeholder text
+        self.username.setMaximumWidth(360) # max width
+        self.username.setStyleSheet(LINE_EDIT_STYLE) # apply style
 
-        self.password = QtWidgets.QLineEdit()
-        self.password.setPlaceholderText("Password")
-        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password.setMaximumWidth(360)
-        self.password.setStyleSheet(LINE_EDIT_STYLE)
+        self.password = QtWidgets.QLineEdit() # password input
+        self.password.setPlaceholderText("Password") # placeholder text
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password) # hide input
+        self.password.setMaximumWidth(360) # max width
+        self.password.setStyleSheet(LINE_EDIT_STYLE) # apply style
 
-        # ---- Buttons
-        self.login_button = QtWidgets.QPushButton("Login")
-        self.login_button.setStyleSheet(BTN_STYLE)
-        self.login_button.setMaximumWidth(360)
+        # Buttons
+        self.login_button = QtWidgets.QPushButton("Login") # login button
+        self.login_button.setStyleSheet(BTN_STYLE) # apply style
+        self.login_button.setMaximumWidth(360) # max width
 
-        self.back_button = QtWidgets.QPushButton("Back")
-        self.back_button.setStyleSheet(BTN_STYLE)
-        self.back_button.setMaximumWidth(360)
+        self.back_button = QtWidgets.QPushButton("Back") # back button
+        self.back_button.setStyleSheet(BTN_STYLE) # apply style
+        self.back_button.setMaximumWidth(360) # max width
 
-        # ---- Center card (same structure as Register)
-        form = QtWidgets.QVBoxLayout()
-        form.setSpacing(12)
-        form.setAlignment(QtCore.Qt.AlignHCenter)
-        form.addWidget(self.username)
-        form.addWidget(self.password)
-        form.addSpacing(6)
-        form.addWidget(self.login_button)
+        # Center card (same structure as Register)
+        form = QtWidgets.QVBoxLayout() # form layout
+        form.setSpacing(12) # spacing between fields
+        form.setAlignment(QtCore.Qt.AlignHCenter) # center alignment
+        form.addWidget(self.username) # add username field
+        form.addWidget(self.password) # add password field
+        form.addSpacing(6) # small space before button
+        form.addWidget(self.login_button) # add login button
 
-        center = QtWidgets.QWidget()
-        center_layout = QtWidgets.QVBoxLayout(center)
-        center_layout.setContentsMargins(0, 0, 0, 0)
-        center_layout.setSpacing(16)
-        center_layout.setAlignment(QtCore.Qt.AlignHCenter)
-        center_layout.addWidget(title)
-        center_layout.addLayout(form)
+        center = QtWidgets.QWidget() # container for centering
+        center_layout = QtWidgets.QVBoxLayout(center) # vertical layout
+        center_layout.setContentsMargins(0, 0, 0, 0) # no margins
+        center_layout.setSpacing(16) # spacing
+        center_layout.setAlignment(QtCore.Qt.AlignHCenter) # center alignment
+        center_layout.addWidget(title) # add title
+        center_layout.addLayout(form) # add form layout
 
-        # ---- Main layout: centered card + bottom back button
-        main = QtWidgets.QVBoxLayout(self)
-        main.setContentsMargins(40, 40, 40, 40)
-        main.setSpacing(0)
-        main.addStretch(1)
-        main.addWidget(center, alignment=QtCore.Qt.AlignCenter)
-        main.addStretch(1)
+        # Main layout: centered card + bottom back button
+        main = QtWidgets.QVBoxLayout(self) # main vertical layout
+        main.setContentsMargins(40, 40, 40, 40) # margins
+        main.setSpacing(0) # no spacing
+        main.addStretch(1) # stretch to center
+        main.addWidget(center, alignment=QtCore.Qt.AlignCenter) # centered card
+        main.addStretch(1) # stretch to center
 
-        bottom = QtWidgets.QWidget()
-        bottom_l = QtWidgets.QHBoxLayout(bottom)
-        bottom_l.setContentsMargins(0, 20, 0, 0)
-        bottom_l.setAlignment(QtCore.Qt.AlignCenter)
-        bottom_l.addWidget(self.back_button)
-        main.addWidget(bottom)
+        bottom = QtWidgets.QWidget() # bottom container
+        bottom_l = QtWidgets.QHBoxLayout(bottom) # horizontal layout
+        bottom_l.setContentsMargins(0, 20, 0, 0) # top margin
+        bottom_l.setAlignment(QtCore.Qt.AlignCenter) # center alignment
+        bottom_l.addWidget(self.back_button) # add back button
+        main.addWidget(bottom) # add bottom container
 
-        # ---- Signals
-        self.login_button.clicked.connect(self._emit_login)
-        self.back_button.clicked.connect(self.backClicked.emit)
+        # Signals
+        self.login_button.clicked.connect(self._emit_login) # handle login
+        self.back_button.clicked.connect(self.backClicked.emit) # handle back
 
-    def _emit_login(self):
-        self.loginRequested.emit(self.username.text().strip(), self.password.text())
+    def _emit_login(self): # Emit login signal with entered credentials
+        self.loginRequested.emit(self.username.text().strip(), self.password.text()) # emit signal
 
-    def reset_form(self):
-        self.username.clear()
+    def reset_form(self): # Clear inputs and focus username
+        self.username.clear() 
         self.password.clear()
         self.username.setFocus()
 
