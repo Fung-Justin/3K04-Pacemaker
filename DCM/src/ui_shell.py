@@ -82,10 +82,54 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         """) # style the label
         self.top_toolbar.addWidget(self.user_label) # add label to toolbar
 
+         # Add space between user log in and about buttons
+        space_between = QtWidgets.QWidget()
+        space_between.setFixedWidth(15)  # Adjust width as needed
+        self.top_toolbar.addWidget(space_between)
+
+        self.About_btn = QtWidgets.QPushButton("About")
+        self.About_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.About_btn.setFixedHeight(28)
+        self.About_btn.setFixedWidth(80)  
+        self.About_btn.setStyleSheet("""
+            QPushButton {
+                padding: 6px 14px;
+               
+                border-radius: 0px;
+                color: white;
+                background: rgba(255,255,255,0.22);
+                border: 1px solid rgba(255,255,255,0.35);
+                font-weight: 600;
+            }
+            QPushButton:hover  { background: rgba(255,255,255,0.30); }
+            QPushButton:pressed{ background: rgba(255,255,255,0.38); }
+        """)
+        self.About_btn.clicked.connect(self.show_about)
+        self.top_toolbar.addWidget(self.About_btn)
+
         # Spacer to push Logout to the right
         spacer = QtWidgets.QWidget() # create a spacer widget
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred) # make it expand
         self.top_toolbar.addWidget(spacer)  # add spacer to toolbar
+
+         # Timer label (now beside Quit button)
+        self.timer_label = QtWidgets.QLabel()
+        self.timer_label.setObjectName("timerLabel")
+        self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.timer_label.setStyleSheet("""
+            #timerLabel {
+                color: white;
+                font-size: 16px;
+                font-weight: 600;
+                padding: 0 12px 0 12px;
+            }
+        """)
+        self.top_toolbar.addWidget(self.timer_label)
+
+        # Add space between timer and logout button
+        space_between_timer_and_logout = QtWidgets.QWidget()
+        space_between_timer_and_logout.setFixedWidth(10)  # Adjust width as needed
+        self.top_toolbar.addWidget(space_between_timer_and_logout)
 
         # Logout button (top-right)
         self.logout_btn = QtWidgets.QPushButton("Quit") 
@@ -107,6 +151,17 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self.top_toolbar.addWidget(self.logout_btn) # add button to toolbar
 
         self.logout_btn.clicked.connect(self.handle_logout) # connect button click to logout handler
+
+        self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(self._update_timer_label)
+        self._timer.start(1000)  # update every second
+        self._update_timer_label()  # initial update
+
+    def _update_timer_label(self):
+        # Show current time, you can customize format
+        now = QtCore.QDateTime.currentDateTime().toString("hh:mm:ss AP")
+        self.timer_label.setText(now)
+
 
 
 
@@ -192,6 +247,10 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             if on_finished:
                 on_finished() # call callback if provided
             return # nothing to hide
+        
+          # Stop the timer if hiding the top toolbar
+        if toolbar_attr == "top_toolbar" and hasattr(self, "_timer"):
+         self._timer.stop()
 
         effect = QtWidgets.QGraphicsOpacityEffect(toolbar) # create opacity effect
         effect.setOpacity(1.0) # start fully opaque
@@ -245,7 +304,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             self.login_page.reset_form() # reset login form
             self.create_top_toolbar(username) # create top toolbar with username
             if hasattr(self, "user_label"): 
-                self.user_label.setText(f"{username}") # update username label
+                self.user_label.setText(f"Logged in as: {username}") # update username label
+            
 
             self.create_status_toolbar() # create status toolbar
             self.reveal_toolbar(self.top_toolbar) # reveal top toolbar
@@ -287,7 +347,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         for k, v in labels.items():
             le = QtWidgets.QLineEdit(v)
             le.setReadOnly(True)
-            le.setStyleSheet("QLineEdit { background: rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.35); border-radius:8px; padding:6px 10px; }")
+            le.setStyleSheet("QLineEdit { background: rgba(255,255,255,0.12); color:black; border:1px solid rgba(0,0,0,0.35); border-radius:8px; padding:6px 10px; }")
             form.addRow(k+":", le)
             fields.append(le)
 
