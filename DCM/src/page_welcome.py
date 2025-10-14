@@ -5,6 +5,7 @@ class WelcomePage(QtWidgets.QWidget):
     # signals to communicate upward to the shell
     loginClicked = QtCore.Signal() # emitted when login button is clicked
     registerClicked = QtCore.Signal() # emitted when register button is clicked
+    aboutClicked = QtCore.Signal() # emitted when about button is clicked
 
     def __init__(self): # Initialize the welcome page
         super().__init__() # call parent constructor
@@ -16,7 +17,13 @@ class WelcomePage(QtWidgets.QWidget):
         self.text.setFont(QtGui.QFont("Helvetica Neue", 36, QtGui.QFont.Bold)) # large bold font
         self.text.setStyleSheet("color: white;") # white text
 
-        # Apple-style buttons
+        self.about_btn = QtWidgets.QPushButton(self) # about button
+        self.about_btn.setText("About") # Set text in the button
+        self.about_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor)) # pointer cursor
+        self.about_btn.setFixedHeight(36) # fixed height
+        self.about_btn.setStyleSheet("""QPushButton {font-size: 14px;font-weight: 600;padding: 6px 14px;border-radius: 14px;color: white;background-color: rgba(255,255,255,0.22);border: 1px solid rgba(255,255,255,0.40);}QPushButton:hover { background-color: rgba(255,255,255,0.30); }QPushButton:pressed { background-color: rgba(255,255,255,0.38); }""") # button styles
+
+        # login buttons
         self.login_button = QtWidgets.QPushButton("Login") # login button
         self.login_button.setObjectName("loginBtn") # for styling
         self.login_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor)) # pointer cursor
@@ -30,11 +37,20 @@ class WelcomePage(QtWidgets.QWidget):
 
         self.login_button.clicked.connect(self.loginClicked.emit) # emit signal on click
         self.register_button.clicked.connect(self.registerClicked.emit) # emit signal on click
+        self.about_btn.clicked.connect(self.aboutClicked.emit) # Emit signal when about button pressed
 
         # Layout setup
         main_layout = QtWidgets.QVBoxLayout(self) # main vertical layout
         main_layout.setContentsMargins(40,40,40,40) # margins
         main_layout.setSpacing(0) # no spacing
+
+        header = QtWidgets.QWidget() # header container
+        header_l = QtWidgets.QHBoxLayout(header) # horizontal layout
+        header_l.setContentsMargins(0,12,0,0) #
+        header_l.addStretch(1); # push to right
+        header_l.addWidget(self.about_btn) # add to layout
+        
+        main_layout.addWidget(header) # add header
         main_layout.addStretch(1) # stretch to center
         main_layout.addWidget(self.text, alignment=QtCore.Qt.AlignCenter) # centered text
         main_layout.addStretch(1) # stretch to center
@@ -54,7 +70,6 @@ class WelcomePage(QtWidgets.QWidget):
 
         bottom_layout.addWidget(self.login_button) # add login button
         bottom_layout.addWidget(self.register_button) # add register button
-
         main_layout.addWidget(bottom_container) # add button container
 
         # fade animation

@@ -5,12 +5,16 @@ from page_register import RegisterPage # register page
 from core.users import UserStore # user management
 from page_dashboard import DashboardPage # main dashboard
 from core.egram import EgramData # egram data handling
+from utility.set_clock import SetClockDialog # setting clock of pacemaker
 
 class UIShell(QtWidgets.QMainWindow): # Main application window
     def __init__(self): # Initialize the main window
         super().__init__() # Call the parent constructor
         self.setWindowTitle("DCM UI") # Set window title
         self.resize(900, 600) # Set initial window size
+
+        self.appInfo = {"applicationModelNumber": self.application_model_number(), "version": self.application_software_rev_nu(), "institution": self.institution_name(), "dcmSerial": self.dcm_serial_num()}
+        self.sessionInfo = {"connected": False, "device_id": None, "pending_set_time": None}
 
         # Model / store
         self.user_store = UserStore()  # saves to users.json (max 10 users)
@@ -42,6 +46,12 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         # Wiring — Register
         self.register_page.backClicked.connect(lambda: (self.register_page.reset_form(), self.goto(self.welcome_page))) # go back to welcome page on clicked back button
         self.register_page.registerRequested.connect(self.handle_register) # handle register request
+
+        # Wiring - About
+        self.welcome_page.aboutClicked.connect(self.show_about) # show about page when clicked about
+
+        # Wiring - Set Clock
+        self.dashboard_page.setClockClicked.connect(self.show_set_clock) # show clock modal when clicked
 
         # Save Signal - Dashboard
         self.dashboard_page.paramsSaved.connect(self._on_params_saved) # connect paramsSaved signal to handler
@@ -77,7 +87,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self.top_toolbar.addWidget(spacer)  # add spacer to toolbar
 
         # Logout button (top-right)
-        self.logout_btn = QtWidgets.QPushButton("Logout") 
+        self.logout_btn = QtWidgets.QPushButton("Quit") 
         self.logout_btn.setObjectName("logoutBtn") # set object name for styling
         self.logout_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor)) # change cursor on hover
         self.logout_btn.setFixedHeight(28) # set fixed height
@@ -255,3 +265,82 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         else:
             QtWidgets.QMessageBox.warning(self, "Register", msg) # show error message
             self.register_page.clear_passwords() # clear password fields
+
+    def show_about(self):
+        dlg = QtWidgets.QDialog(self)
+        dlg.setWindowTitle("About DCM")
+        dlg.setModal(True)
+        form = QtWidgets.QFormLayout(dlg)
+        form.setHorizontalSpacing(14); 
+        form.setVerticalSpacing(8)
+
+        labels = {
+            "Application model number": self.appInfo["applicationModelNumber"],
+            "Software revision":        self.appInfo["version"],
+            "DCM serial number":        self.appInfo["dcmSerial"],
+            "Institution":              self.appInfo["institution"],
+        }
+
+        # build read-only fields
+        fields = []
+        for k, v in labels.items():
+            le = QtWidgets.QLineEdit(v)
+            le.setReadOnly(True)
+            le.setStyleSheet("QLineEdit { background: rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.35); border-radius:8px; padding:6px 10px; }")
+            form.addRow(k+":", le)
+            fields.append(le)
+
+        btns = QtWidgets.QHBoxLayout()
+        btns.addStretch(1)
+        copy_btn = QtWidgets.QPushButton("Copy")
+        close_btn = QtWidgets.QPushButton("Close")
+        btns.addWidget(copy_btn)
+        btns.addWidget(close_btn)
+        form.addRow(btns)
+
+        def copy_all():
+            text = "\n".join(f"{k}: {labels[k]}" for k in labels)
+            QtWidgets.QApplication.clipboard().setText(text)
+            QtWidgets.QToolTip.showText(QtGui.QCursor.pos(), "Copied", dlg)
+
+        copy_btn.clicked.connect(copy_all)
+        close_btn.clicked.connect(dlg.accept)
+
+        dlg.resize(420, dlg.sizeHint().height())
+        dlg.exec()
+
+    def application_model_number(self):
+        # If there is a way in the future pull metadata off the DCM device and return application model number
+        return "DCM-EMU-01"
+    
+    def application_software_rev_nu(self):
+        # If there is a way in the future pull metadata off the device and return software rev num
+        return "0.1.0"
+    
+    def institution_name(self):
+        # Change the institution if needed
+        return "McMaster University"
+
+    def dcm_serial_num(self):
+        # Change if you can actually pull the serial number from the device.
+        return "987654321-ABCDE-XYZ"
+    
+    def show_set_clock(self): # Open the Set Clock dialog, validate, and queue the chosen device time.
+        dlg = SetClockDialog(self)
+        if dlg.exec() == QtWidgets.QDialog.Accepted and dlg.selected:
+            # Store as ISO string; you can also keep QDateTime if you prefer
+            device_dt_local = dlg.selected
+            iso = device_dt_local.toString(QtCore.Qt.ISODate)
+            self.sessionInfo["pending_set_time"] = iso
+            print("Set Time: ", iso)
+
+            # UX feedback: show in status pill or a toast
+            QtWidgets.QMessageBox.information(
+                self, "Set Clock",
+                f"Device time queued for apply (D1):\n{iso}"
+            )
+
+            # If you have a status label, reflect a 'Pending' hint
+            if getattr(self, "status", None):
+                self.status.setText("Not connected • SetTime pending")
+        # else: user cancelled; do nothing

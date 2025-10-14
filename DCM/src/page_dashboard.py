@@ -40,6 +40,7 @@ LINE_STYLE = """
 
 class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
     paramsSaved = QtCore.Signal(str, dict) # mode, parameters
+    setClockClicked = QtCore.Signal() # 
 
     def __init__(self): # Initialize the dashboard page
         super().__init__() # call parent constructor
@@ -89,6 +90,10 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         self.stack.addWidget(self._make_form_AAI()) #index 2
         self.stack.addWidget(self._make_form_VVI()) #index 3
 
+        self.set_clock_btn = QtWidgets.QPushButton("Set Clock") # set clock on pacemaker button
+        self.set_clock_btn.setStyleSheet(BTN_STYLE) # add button style
+        self.set_clock_btn.setFixedHeight(46)
+
         self.save_btn = QtWidgets.QPushButton("Save Parameters") # save button
         self.save_btn.setStyleSheet(BTN_STYLE) # button style
         self.save_btn.setFixedHeight(46) # fixed height
@@ -100,9 +105,11 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         actions = QtWidgets.QHBoxLayout() # horizontal layout for action buttons
         actions.setSpacing(12) # spacing between buttons
         actions.addStretch(1) # push buttons to right
+        actions.addWidget(self.set_clock_btn) # set-clock button
         actions.addWidget(self.reset_btn) # reset button
         actions.addWidget(self.save_btn) # save button
 
+        self.set_clock_btn.clicked.connect(self.setClockClicked.emit) # connect set clock
         self.save_btn.clicked.connect(self._emit_save) # connect save action
         self.reset_btn.clicked.connect(self._reset_current) # connect reset action
 
@@ -234,14 +241,10 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
 
     def _collect_params(self, mode: str) -> dict: # Collect parameters from current form
         if mode == "AOO": 
-            return dict(LRL=self.aoo_LRL.value(), AtrialAmp=self.aoo_Amp.value(), AtrialPW=self.aoo_PW.value()) # AOO
+            return dict(LRL=self.aoo_LRL.value(), URL=self.aoo_URL.value(), AtrialAmp=self.aoo_VAmp.value(), AtrialPW=self.aoo_PW.value()) # AOO
         if mode == "VOO": 
-            return dict(LRL=self.voo_LRL.value(), VentAmp=self.voo_Amp.value(), VentPW=self.voo_PW.value()) # VOO
+            return dict(LRL=self.voo_LRL.value(), URL=self.voo_URL.value(), VentAmp=self.voo_VAmp.value(), VentPW=self.voo_PW.value()) # VOO
         if mode == "AAI":
-            return dict(LRL=self.aai_LRL.value(), URL=self.aai_URL.value(),
-                        AtrialAmp=self.aai_Amp.value(), AtrialPW=self.aai_PW.value(),
-                        ARP=self.aai_ARP.value(), PVARP=self.aai_PVARP.value()) # AAI
+            return dict(LRL=self.aai_LRL.value(), URL=self.aai_URL.value(), AtrialAmp=self.aai_VAmp.value(), AtrialPW=self.aai_PW.value(), AS=self.aai_AS.value(), ARP=self.aai_ARP.value(), PVARP=self.aai_PVARP.value(), Hys=self.aai_Hys.value(), RS=self.aai_RS.value()) # AAI
         # VVI
-        return dict(LRL=self.vvi_LRL.value(), URL=self.vvi_URL.value(),
-                    VentAmp=self.vvi_Amp.value(), VentPW=self.vvi_PW.value(),
-                    VRP=self.vvi_VRP.value())
+        return dict(LRL=self.vvi_LRL.value(), URL=self.vvi_URL.value(), VentAmp=self.vvi_VAmp.value(), VentPW=self.vvi_PW.value(), VS=self.vvi_VS.value(), VRP=self.vvi_VRP.value(), Hys=self.vvi_Hys.value(), RS=self.vvi_RS.value())
