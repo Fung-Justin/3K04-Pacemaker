@@ -8,4 +8,10 @@ class EgramData: # ECG data structure
     ventricular: t.List[float] = field(default_factory=list) # ventricular signal
     sampling_rate: float = 100.0 # Hz Placeholder for now
     timestamp: str = "" # when data was recorded
+
+    def clear(self):
+        self.time.clear()
+        self.atrial.clear()
+        self.ventricular.clear()
+        self.timestamp = ""
     

@@ -52,6 +52,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
 
         # Wiring - Set Clock
         self.dashboard_page.setClockClicked.connect(self.show_set_clock) # show clock modal when clicked
+        self.dashboard_page.newPatientClicked.connect(self.new_patient) # setup new pacemaker when clicked
 
         # Save Signal - Dashboard
         self.dashboard_page.paramsSaved.connect(self._on_params_saved) # connect paramsSaved signal to handler
@@ -344,3 +345,45 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             if getattr(self, "status", None):
                 self.status.setText("Not connected • SetTime pending")
         # else: user cancelled; do nothing
+
+    def new_patient(self):
+        if QtWidgets.QMessageBox.question(self, "New Patient", "End Current Device and Interrogate New Device?") != QtWidgets.QMessageBox.Yes: 
+            return # Make sure that the user wants to change devices
+        
+        self._stop_telemetry_stub() # stop all telemetry
+        self.sessionInfo = { # Clear session information
+            "connected": False,
+            "device_id": None,
+            "pending_set_time": None,
+            "started_at": None,
+            "last_seen": None,
+            "status": "Disconnected",
+        }
+
+        if hasattr(self, "egram_data") and self.egram_data: # Clear egram buffers
+            try:
+                self.egram_data.clear()
+            except AttributeError:
+                self.egram_data.time = []
+                self.egram_data.atrial = []
+                self.egram_data.ventricular = []
+                self.egram_data.timestamp = ""
+
+        if hasattr(self, "dashboard_page"): # reset all dashboard forms
+            self.dashboard_page.reset_all()
+
+        self._set_status_disconnected() # disconnect serial 
+        self.goto(self.dashboard_page) # go to the dashboard_page
+
+    def _stop_telemetry_stub(self):
+        # For deliverable 1 there is nothing to stop since we are not communicating with the pacemaker
+        # For deliverable 2 this is a placeholder for serial stop/close
+        pass
+
+    def _set_status_disconnected(self):
+        if getattr(self, "status", None):
+            self.status.setText("Disconnected")
+            self.status.setStyleSheet(
+                "#statusPill { padding:4px 10px; border-radius:0px; color:white; "
+                "background: rgba(142,142,147,0.2); border:1px solid rgba(255,255,255,0.35); }"
+            )

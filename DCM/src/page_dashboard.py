@@ -40,7 +40,8 @@ LINE_STYLE = """
 
 class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
     paramsSaved = QtCore.Signal(str, dict) # mode, parameters
-    setClockClicked = QtCore.Signal() # 
+    setClockClicked = QtCore.Signal() # set clock clicked signal
+    newPatientClicked = QtCore.Signal() # new patient clicked signal
 
     def __init__(self): # Initialize the dashboard page
         super().__init__() # call parent constructor
@@ -90,9 +91,13 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         self.stack.addWidget(self._make_form_AAI()) #index 2
         self.stack.addWidget(self._make_form_VVI()) #index 3
 
+        self.new_patient_btn = QtWidgets.QPushButton("New Patient") # new patient button
+        self.new_patient_btn.setStyleSheet(BTN_STYLE) # add button style
+        self.new_patient_btn.setFixedHeight(46) # fixed height
+
         self.set_clock_btn = QtWidgets.QPushButton("Set Clock") # set clock on pacemaker button
         self.set_clock_btn.setStyleSheet(BTN_STYLE) # add button style
-        self.set_clock_btn.setFixedHeight(46)
+        self.set_clock_btn.setFixedHeight(46) # fixed height
 
         self.save_btn = QtWidgets.QPushButton("Save Parameters") # save button
         self.save_btn.setStyleSheet(BTN_STYLE) # button style
@@ -105,10 +110,12 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         actions = QtWidgets.QHBoxLayout() # horizontal layout for action buttons
         actions.setSpacing(12) # spacing between buttons
         actions.addStretch(1) # push buttons to right
+        actions.addWidget(self.new_patient_btn) # new patient button
         actions.addWidget(self.set_clock_btn) # set-clock button
         actions.addWidget(self.reset_btn) # reset button
         actions.addWidget(self.save_btn) # save button
 
+        self.new_patient_btn.clicked.connect(self.newPatientClicked.emit) # connect new patient
         self.set_clock_btn.clicked.connect(self.setClockClicked.emit) # connect set clock
         self.save_btn.clicked.connect(self._emit_save) # connect save action
         self.reset_btn.clicked.connect(self._reset_current) # connect reset action
@@ -248,3 +255,16 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
             return dict(LRL=self.aai_LRL.value(), URL=self.aai_URL.value(), AtrialAmp=self.aai_VAmp.value(), AtrialPW=self.aai_PW.value(), AS=self.aai_AS.value(), ARP=self.aai_ARP.value(), PVARP=self.aai_PVARP.value(), Hys=self.aai_Hys.value(), RS=self.aai_RS.value()) # AAI
         # VVI
         return dict(LRL=self.vvi_LRL.value(), URL=self.vvi_URL.value(), VentAmp=self.vvi_VAmp.value(), VentPW=self.vvi_PW.value(), VS=self.vvi_VS.value(), VRP=self.vvi_VRP.value(), Hys=self.vvi_Hys.value(), RS=self.vvi_RS.value())
+    
+    def reset_all(self):
+        # rebuild each form to constructor defaults
+        makers = [self._make_form_AOO, self._make_form_VOO, self._make_form_AAI, self._make_form_VVI]
+        for i, make in enumerate(makers):
+            # remove old widget and insert a fresh one in the same index
+            old = self.stack.widget(i)
+            self.stack.removeWidget(old)
+            old.deleteLater()
+            self.stack.insertWidget(i, make())
+        # show first tab again
+        self.mode_buttons[0].setChecked(True)
+        self.stack.setCurrentIndex(0)
