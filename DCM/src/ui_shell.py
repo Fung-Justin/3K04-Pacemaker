@@ -71,7 +71,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.top_toolbar) # add toolbar to the top area
 
         # Left side - user info label
-        self.user_label = QtWidgets.QLabel(f"Logged in as {username}") # label showing logged in user
+        self.user_label = QtWidgets.QLabel(f"{username}") # label showing logged in user
         self.user_label.setObjectName("userLabel") # set object name for styling
         self.user_label.setStyleSheet(""" 
             #userLabel {
@@ -82,30 +82,30 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         """) # style the label
         self.top_toolbar.addWidget(self.user_label) # add label to toolbar
 
-         # Add space between user log in and about buttons
-        space_between = QtWidgets.QWidget()
-        space_between.setFixedWidth(15)  # Adjust width as needed
-        self.top_toolbar.addWidget(space_between)
+        #  # Add space between user log in and about buttons
+        # space_between = QtWidgets.QWidget()
+        # space_between.setFixedWidth(15)  # Adjust width as needed
+        # self.top_toolbar.addWidget(space_between)
 
-        self.About_btn = QtWidgets.QPushButton("About")
-        self.About_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.About_btn.setFixedHeight(28)
-        self.About_btn.setFixedWidth(80)  
-        self.About_btn.setStyleSheet("""
-            QPushButton {
-                padding: 6px 14px;
+        # self.About_btn = QtWidgets.QPushButton("About")
+        # self.About_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        # self.About_btn.setFixedHeight(28)
+        # self.About_btn.setFixedWidth(80)  
+        # self.About_btn.setStyleSheet("""
+        #     QPushButton {
+        #         padding: 6px 14px;
                
-                border-radius: 0px;
-                color: white;
-                background: rgba(255,255,255,0.22);
-                border: 1px solid rgba(255,255,255,0.35);
-                font-weight: 600;
-            }
-            QPushButton:hover  { background: rgba(255,255,255,0.30); }
-            QPushButton:pressed{ background: rgba(255,255,255,0.38); }
-        """)
-        self.About_btn.clicked.connect(self.show_about)
-        self.top_toolbar.addWidget(self.About_btn)
+        #         border-radius: 0px;
+        #         color: white;
+        #         background: rgba(255,255,255,0.22);
+        #         border: 1px solid rgba(255,255,255,0.35);
+        #         font-weight: 600;
+        #     }
+        #     QPushButton:hover  { background: rgba(255,255,255,0.30); }
+        #     QPushButton:pressed{ background: rgba(255,255,255,0.38); }
+        # """)
+        # self.About_btn.clicked.connect(self.show_about)
+        # self.top_toolbar.addWidget(self.About_btn)
 
         # Spacer to push Logout to the right
         spacer = QtWidgets.QWidget() # create a spacer widget
@@ -161,9 +161,6 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         # Show current time, you can customize format
         now = QtCore.QDateTime.currentDateTime().toString("hh:mm:ss AP")
         self.timer_label.setText(now)
-
-
-
 
     def create_status_toolbar(self): # Create the status toolbar function
         if self.status_toolbar:
@@ -304,7 +301,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             self.login_page.reset_form() # reset login form
             self.create_top_toolbar(username) # create top toolbar with username
             if hasattr(self, "user_label"): 
-                self.user_label.setText(f"Logged in as: {username}") # update username label
+                self.user_label.setText(f"{username}") # update username label
             
 
             self.create_status_toolbar() # create status toolbar
