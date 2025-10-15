@@ -6,6 +6,8 @@ from core.users import UserStore # user management
 from page_dashboard import DashboardPage # main dashboard
 from core.egram import EgramData # egram data handling
 from utility.set_clock import SetClockDialog # setting clock of pacemaker
+from dialogs.report_preview import ReportPreview
+from datetime import datetime
 
 class UIShell(QtWidgets.QMainWindow): # Main application window
     def __init__(self): # Initialize the main window
@@ -15,6 +17,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
 
         self.appInfo = {"applicationModelNumber": self.application_model_number(), "version": self.application_software_rev_nu(), "institution": self.institution_name(), "dcmSerial": self.dcm_serial_num()}
         self.sessionInfo = {"connected": False, "device_id": None, "pending_set_time": None}
+        self.last_saved_params = {} # Used for printing pdf
 
         # Model / store
         self.user_store = UserStore()  # saves to users.json (max 10 users)
@@ -53,6 +56,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         # Wiring - Set Clock
         self.dashboard_page.setClockClicked.connect(self.show_set_clock) # show clock modal when clicked
         self.dashboard_page.newPatientClicked.connect(self.new_patient) # setup new pacemaker when clicked
+        self.dashboard_page.aboutPageClicked.connect(self.show_about) # setup about page when clicked 
 
         # Save Signal - Dashboard
         self.dashboard_page.paramsSaved.connect(self._on_params_saved) # connect paramsSaved signal to handler
@@ -60,6 +64,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self.status_toolbar = None # in the beginning, no status toolbar
 
     def _on_params_saved(self, mode, params): # Handle saving parameters
+        self.last_saved_params[mode] = dict(params)
         print(f"[DEBUG] Saved {mode} -> {params}") # debug print
 
     def create_top_toolbar(self, username: str): # Create the top toolbar function
@@ -78,58 +83,68 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 color: white;
                 font-weight: 500;
                 padding-left: 8px;
+                font-size: 12px;
             }
         """) # style the label
         self.top_toolbar.addWidget(self.user_label) # add label to toolbar
 
-        #  # Add space between user log in and about buttons
-        # space_between = QtWidgets.QWidget()
-        # space_between.setFixedWidth(15)  # Adjust width as needed
-        # self.top_toolbar.addWidget(space_between)
+        self._left_pad = QtWidgets.QWidget()
+        self._left_pad.setFixedWidth(0)
+        self.top_toolbar.addWidget(self._left_pad)
 
-        # self.About_btn = QtWidgets.QPushButton("About")
-        # self.About_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.About_btn.setFixedHeight(28)
-        # self.About_btn.setFixedWidth(80)  
-        # self.About_btn.setStyleSheet("""
-        #     QPushButton {
-        #         padding: 6px 14px;
-               
-        #         border-radius: 0px;
-        #         color: white;
-        #         background: rgba(255,255,255,0.22);
-        #         border: 1px solid rgba(255,255,255,0.35);
-        #         font-weight: 600;
-        #     }
-        #     QPushButton:hover  { background: rgba(255,255,255,0.30); }
-        #     QPushButton:pressed{ background: rgba(255,255,255,0.38); }
-        # """)
-        # self.About_btn.clicked.connect(self.show_about)
-        # self.top_toolbar.addWidget(self.About_btn)
+        left_spacer = QtWidgets.QWidget()
+        left_spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.top_toolbar.addWidget(left_spacer)
 
-        # Spacer to push Logout to the right
-        spacer = QtWidgets.QWidget() # create a spacer widget
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred) # make it expand
-        self.top_toolbar.addWidget(spacer)  # add spacer to toolbar
-
-         # Timer label (now beside Quit button)
+        # Timer label (now beside Quit button)
         self.timer_label = QtWidgets.QLabel()
         self.timer_label.setObjectName("timerLabel")
         self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
         self.timer_label.setStyleSheet("""
             #timerLabel {
                 color: white;
-                font-size: 16px;
+                font-size: 12px;
                 font-weight: 600;
                 padding: 0 12px 0 12px;
             }
         """)
         self.top_toolbar.addWidget(self.timer_label)
 
+        right_spacer = QtWidgets.QWidget()
+        right_spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.top_toolbar.addWidget(right_spacer)
+
+        reports_btn = QtWidgets.QToolButton(self)
+        reports_btn.setText("Reports")
+        reports_btn.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        reports_btn.setFixedHeight(28)
+        reports_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        reports_btn.setStyleSheet("""
+            QToolButton {
+                padding: 6px 14px;
+                border-radius: 16px;
+                color: white;
+                background: rgba(255,255,255,0.22);
+                border: 1px solid rgba(255,255,255,0.35);
+                font-weight: 600;
+                font-size: 12px;
+            }
+            QToolButton:hover { background: rgba(255,255,255,0.3); }
+            QToolButton:pressed { background: rgba(255,255,255,0.38); }
+        """)
+
+        menu = QtWidgets.QMenu(self)
+        menu.addSection("Report")
+        menu.addAction("Bradycardia Parameters", self.open_brady_params_report)
+        menu.addAction("Temporary Parameters", self.open_temporary_params_report)
+        reports_btn.setMenu(menu)
+
         # Add space between timer and logout button
-        space_between_timer_and_logout = QtWidgets.QWidget()
-        space_between_timer_and_logout.setFixedWidth(10)  # Adjust width as needed
-        self.top_toolbar.addWidget(space_between_timer_and_logout)
+        # space_between_timer_and_logout = QtWidgets.QWidget()
+        # space_between_timer_and_logout.setFixedWidth(10)  # Adjust width as needed
+        # self.top_toolbar.addWidget(space_between_timer_and_logout)
+
+        self.top_toolbar.addWidget(reports_btn) # Add reports button
 
         # Logout button (top-right)
         self.logout_btn = QtWidgets.QPushButton("Quit") 
@@ -144,6 +159,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 background: rgba(255,255,255,0.22);
                 border: 1px solid rgba(255,255,255,0.35);
                 font-weight: 600;
+                font-size: 12px;
             }
             #logoutBtn:hover  { background: rgba(255,255,255,0.30); }
             #logoutBtn:pressed{ background: rgba(255,255,255,0.38); }
@@ -331,6 +347,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         form = QtWidgets.QFormLayout(dlg)
         form.setHorizontalSpacing(14); 
         form.setVerticalSpacing(8)
+        form.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+
 
         labels = {
             "Application model number": self.appInfo["applicationModelNumber"],
@@ -344,7 +362,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         for k, v in labels.items():
             le = QtWidgets.QLineEdit(v)
             le.setReadOnly(True)
-            le.setStyleSheet("QLineEdit { background: rgba(255,255,255,0.12); color:black; border:1px solid rgba(0,0,0,0.35); border-radius:8px; padding:6px 10px; }")
+            le.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+            le.setStyleSheet("QLineEdit { background: rgba(255,255,255,0.12); color:white; border:1px solid rgba(0,0,0,0.35); border-radius:8px; padding:6px 10px; }")
             form.addRow(k+":", le)
             fields.append(le)
 
@@ -444,3 +463,66 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 "#statusPill { padding:4px 10px; border-radius:0px; color:white; "
                 "background: rgba(142,142,147,0.2); border:1px solid rgba(255,255,255,0.35); }"
             )
+    
+    def _report_header_html(self, report_name: str) -> str:
+        header_report = {
+            'institution': self.appInfo['institution'],
+            'printed_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'device': {self.sessionInfo['device_id']['model']} + "/" + {self.sessionInfo['device_id']['serial']},
+            'dcm': self.appInfo['dcmSerial'],
+            'app': {self.appInfo['modelNumber']} + " v" + {self.appInfo['version']},
+            'name': report_name
+        }
+        return f"""
+            <div style="border-bottom:1px solid #aaa;margin-bottom:10px;padding-bottom:6px;">
+                <h2 style="margin:0 0 6px 0;">{h['name']}</h2>
+                <table style="font-size:12px;">
+                    <tr><td><b>Institution</b></td><td>{h['institution']}</td></tr>
+                    <tr><td><b>Printed</b></td><td>{h['printed_at']}</td></tr>
+                    <tr><td><b>Device</b></td><td>{h['device']}</td></tr>
+                    <tr><td><b>DCM Serial</b></td><td>{h['dcm']}</td></tr>
+                    <tr><td><b>Application</b></td><td>{h['app']}</td></tr>
+                </table>
+            </div>
+        """
+    
+    def _table_from_kv(self, kv: dict, cols=("Parameter","Value")) -> str:
+        rows = "".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k,v in kv.items())
+        return f"""
+            <table style="width:100%;border-collapse:collapse;">
+                <tr><th style="text-align:left;border:1px solid #ccc;padding:6px;">{cols[0]}</th>
+                <th style="text-align:left;border:1px solid #ccc;padding:6px;">{cols[1]}</th></tr>
+                {rows}
+            </table>
+        """.replace("<tr><td", '<tr><td style="border:1px solid #ccc;padding:6px;"').replace("</td><td", '</td><td style="border:1px solid #ccc;padding:6px;"')
+
+    def _diff_table(self, before: dict, after: dict) -> str:
+        keys = sorted(set(before)|set(after))
+        row_html = []
+        for k in keys:
+            a = before.get(k, "—"); b = after.get(k, "—")
+            mark = "" if a == b else ' style="background:#fff6cc;"'
+            row_html.append(f'<tr{mark}><td>{k}</td><td>{a}</td><td>{b}</td></tr>')
+        rows = "".join(row_html)
+        return f"""
+            <table style="width:100%;border-collapse:collapse;">
+                <tr><th style="text-align:left;border:1px solid #ccc;padding:6px;">Parameter</th>
+                <th style="text-align:left;border:1px solid #ccc;padding:6px;">Saved</th>
+                <th style="text-align:left;border:1px solid #ccc;padding:6px;">Current</th></tr>
+                {rows}
+            </table>
+        """.replace("<tr><td", '<tr><td style="border:1px solid #ccc;padding:6px;"').replace("</td><td", '</td><td style="border:1px solid #ccc;padding:6px;"')
+
+    def open_brady_params_report(self):
+        mode = self.dashboard_page.current_mode()
+        params = self.dashboard_page._collect_params(mode)
+        html = self._report_header_html("Bradycardia Parameters Report") + f"<h3>Mode: {mode}</h3>" + self._table_from_kv(params)
+        ReportPreview(html, self).exec()
+
+    def open_temporary_params_report(self):
+        mode = self.dashboard_page.current_mode()
+        current = self.dashboard_page._collect_params(mode)
+        saved = self.last_saved_params.get(mode, {})
+        note = "<p style='color:#666;font-size:12px;'>Rows highlighted = values changed since last Save.</p>"
+        html = self._report_header_html("Temporary Parameters Report") + f"<h3>Mode: {mode}</h3>" + note + self._diff_table(saved, current)
+        ReportPreview(html, self).exec()

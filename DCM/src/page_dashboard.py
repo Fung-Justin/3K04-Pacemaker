@@ -42,6 +42,7 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
     paramsSaved = QtCore.Signal(str, dict) # mode, parameters
     setClockClicked = QtCore.Signal() # set clock clicked signal
     newPatientClicked = QtCore.Signal() # new patient clicked signal
+    aboutPageClicked = QtCore.Signal() # about page clicked
 
     def __init__(self): # Initialize the dashboard page
         super().__init__() # call parent constructor
@@ -91,30 +92,53 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         self.stack.addWidget(self._make_form_AAI()) #index 2
         self.stack.addWidget(self._make_form_VVI()) #index 3
 
+        self.about_btn = QtWidgets.QPushButton("?")
+        self.about_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 16px;
+                font-weight: 600;
+                padding: 10px 18px;
+                min-height: 24px;
+                border-radius: 20px;
+                color: white;
+                background-color: rgba(255,255,255,0.0);
+                border: 1px solid rgba(255,255,255,0.15);
+            }
+                                     
+        """)
+        self.about_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.about_btn.setFixedHeight(23)
+
         self.new_patient_btn = QtWidgets.QPushButton("New Patient") # new patient button
         self.new_patient_btn.setStyleSheet(BTN_STYLE) # add button style
+        self.new_patient_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.new_patient_btn.setFixedHeight(46) # fixed height
 
         self.set_clock_btn = QtWidgets.QPushButton("Set Clock") # set clock on pacemaker button
         self.set_clock_btn.setStyleSheet(BTN_STYLE) # add button style
+        self.set_clock_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.set_clock_btn.setFixedHeight(46) # fixed height
 
         self.save_btn = QtWidgets.QPushButton("Save Parameters") # save button
         self.save_btn.setStyleSheet(BTN_STYLE) # button style
+        self.save_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.save_btn.setFixedHeight(46) # fixed height
         
         self.reset_btn = QtWidgets.QPushButton("Reset") # reset button
         self.reset_btn.setStyleSheet(BTN_STYLE) # button style
+        self.reset_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.reset_btn.setFixedHeight(46) # fixed height
 
         actions = QtWidgets.QHBoxLayout() # horizontal layout for action buttons
         actions.setSpacing(12) # spacing between buttons
+        actions.addWidget(self.about_btn) # about button
         actions.addStretch(1) # push buttons to right
         actions.addWidget(self.new_patient_btn) # new patient button
         actions.addWidget(self.set_clock_btn) # set-clock button
         actions.addWidget(self.reset_btn) # reset button
         actions.addWidget(self.save_btn) # save button
 
+        self.about_btn.clicked.connect(self.aboutPageClicked.emit) # connect about page
         self.new_patient_btn.clicked.connect(self.newPatientClicked.emit) # connect new patient
         self.set_clock_btn.clicked.connect(self.setClockClicked.emit) # connect set clock
         self.save_btn.clicked.connect(self._emit_save) # connect save action
