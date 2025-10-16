@@ -4,38 +4,40 @@ from PySide6 import QtCore, QtWidgets, QtGui
 class SetClockDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Set Device Clock")
-        self.setModal(True)
-        self.selected: QtCore.QDateTime | None = None
+        self.setWindowTitle("Set Device Clock") # title
+        self.setModal(True) # Popup window
+        self.selected: QtCore.QDateTime | None = None # The type of the selected variable can be either the QDateTime or None
         
-        now = QtCore.QDateTime.currentDateTime()
+        now = QtCore.QDateTime.currentDateTime() # get current time
         
         # widgets
-        self.dt = QtWidgets.QDateTimeEdit(now)
-        self.dt.setDisplayFormat("yyyy-MM-dd  HH:mm:ss")
-        self.dt.setCalendarPopup(True)
-        self.dt.setTimeSpec(QtCore.Qt.LocalTime)
+        self.dt = QtWidgets.QDateTimeEdit(now) # select the current time as the display time in the input field
+        self.dt.setDisplayFormat("yyyy-MM-dd  HH:mm:ss") # set the format of the time in the input field
+        self.dt.setCalendarPopup(True) # calendar dropdown 
+        self.dt.setTimeSpec(QtCore.Qt.LocalTime) # Set the time to local time
 
-        info = QtWidgets.QLabel("Choose the device’s local date and time.")
-        info.setStyleSheet("color: white;")
-        tip = QtWidgets.QLabel("Note: For D1 this is queued only; no device write yet.")
-        tip.setStyleSheet("color: rgba(255,255,255,0.75); font-size: 12px;")
+        info = QtWidgets.QLabel("Choose the device’s local date and time.") # Information for the popup window
+        info.setStyleSheet("color: white;") # set the text color white
+        tip = QtWidgets.QLabel("Note: For D1 this is queued only; no device write yet.") # Put a note for deliverable 1 since we are not communicating to the pacemaker
+        tip.setStyleSheet("color: rgba(255,255,255,0.75); font-size: 12px;") # set the stylesheet of the tip
 
         # buttons
-        ok = QtWidgets.QPushButton("OK")
-        cancel = QtWidgets.QPushButton("Cancel")
-        ok.clicked.connect(self._accept)
-        cancel.clicked.connect(self.reject)
+        ok = QtWidgets.QPushButton("OK") # okay button
+        cancel = QtWidgets.QPushButton("Cancel") # cancel button 
+        ok.clicked.connect(self._accept) # accept the value and use it as selected time
+        cancel.clicked.connect(self.reject) # reject (do nothing)
 
         # layout
-        form = QtWidgets.QFormLayout()
+        form = QtWidgets.QFormLayout() # form a layout
         form.addRow("Date & Time:", self.dt)
 
+        # Button layout
         btns = QtWidgets.QHBoxLayout()
         btns.addStretch(1)
         btns.addWidget(cancel)
         btns.addWidget(ok)
 
+        # Creating a layout
         root = QtWidgets.QVBoxLayout(self)
         root.setContentsMargins(16, 16, 16, 16)
         root.setSpacing(10)
@@ -43,7 +45,7 @@ class SetClockDialog(QtWidgets.QDialog):
         root.addLayout(form)
         root.addWidget(tip)
         root.addSpacing(8)
-        root.addLayout(btns)
+        root.addLayout(btns) 
 
         # light styling so it matches your theme
         self.setStyleSheet("""
@@ -67,6 +69,6 @@ class SetClockDialog(QtWidgets.QDialog):
             QPushButton:pressed { background-color: rgba(255,255,255,0.38); }
         """)
 
-    def _accept(self):
-        self.selected = self.dt.dateTime()
-        self.accept()
+    def _accept(self): # modified accept() function
+        self.selected = self.dt.dateTime() # pick selected time
+        self.accept() # close the window and accept that time as the time selected by the user
