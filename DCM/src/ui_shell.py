@@ -473,8 +473,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 "background: rgba(142,142,147,0.2); border:1px solid rgba(255,255,255,0.35); }"
             )
     
-    def _report_header_html(self, report_name: str) -> str:
-        header_report = {
+    def _report_header_html(self, report_name: str) -> str: # Return a header of a PDF file
+        header_report = { # Generate a header from variables
             'institution': self.appInfo['institution'],
             'printed_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'device': self.sessionInfo['device_id']['model'] + " / " + self.sessionInfo['device_id']['serial'],
@@ -482,7 +482,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             'app': self.appInfo['applicationModelNumber'] + " v" + self.appInfo['version'],
             'name': report_name
         }
-        return f"""
+        # Return html structured code and import all the values from variables
+        return f""" 
             <div style="border-bottom:1px solid #aaa;margin-bottom:10px;padding-bottom:6px;">
                 <h2 style="margin:0 0 6px 0;">{header_report['name']}</h2>
                 <table style="font-size:12px;">
@@ -494,25 +495,28 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 </table>
             </div>
         """
-    
+    # Make a table from all the parameter data (kv)
     def _table_from_kv(self, kv: dict, cols=("Parameter","Value")) -> str:
-        rows = "".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k,v in kv.items())
-        return f"""
+        rows = "".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k,v in kv.items()) # From the each parameter value make a row by the key and value pair
+        # Reutrn the entire table
+        return f""" 
             <table style="width:100%;border-collapse:collapse;">
                 <tr><th style="text-align:left;border:1px solid #ccc;padding:6px;">{cols[0]}</th>
                 <th style="text-align:left;border:1px solid #ccc;padding:6px;">{cols[1]}</th></tr>
                 {rows}
             </table>
         """.replace("<tr><td", '<tr><td style="border:1px solid #ccc;padding:6px;"').replace("</td><td", '</td><td style="border:1px solid #ccc;padding:6px;"')
+        # instead of crowding the for loop above we can apply style to the rows by replacing text.
 
-    def _diff_table(self, before: dict, after: dict) -> str:
-        keys = sorted(set(before)|set(after))
-        row_html = []
-        for k in keys:
-            a = before.get(k, "—"); b = after.get(k, "—")
-            mark = "" if a == b else ' style="background:#fff6cc;"'
-            row_html.append(f'<tr{mark}><td>{k}</td><td>{a}</td><td>{b}</td></tr>')
-        rows = "".join(row_html)
+    def _diff_table(self, before: dict, after: dict) -> str: # create a difference table between old and new values
+        keys = sorted(set(before)|set(after)) # first take all keys in before and after and sort them 
+        row_html = [] # keep an array of rows 
+        for k in keys: # loop for every key in keys 
+            a = before.get(k, "—"); b = after.get(k, "—") # store the values
+            mark = "" if a == b else ' style="background:#ff8a8a;"' # if the two values are the same do nothing else set the color to reddish
+            row_html.append(f'<tr{mark}><td>{k}</td><td>{a}</td><td>{b}</td></tr>') # append the row with style (mark) key (k) before (a) after (b)
+        rows = "".join(row_html) # When you do every key join them all up from the array
+        # Return the final table replace the styles in rows the same way as before
         return f"""
             <table style="width:100%;border-collapse:collapse;">
                 <tr><th style="text-align:left;border:1px solid #ccc;padding:6px;">Parameter</th>
@@ -522,10 +526,10 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             </table>
         """.replace("<tr><td", '<tr><td style="border:1px solid #ccc;padding:6px;"').replace("</td><td", '</td><td style="border:1px solid #ccc;padding:6px;"')
 
-    def open_brady_params_report(self):
-        mode = self.dashboard_page.current_mode()
-        params = self.dashboard_page._collect_params(mode)
-        html = self._report_header_html("Bradycardia Parameters Report") + f"<h3>Mode: {mode}</h3>" + self._table_from_kv(params)
+    def open_brady_params_report(self): # Bradycardia Report Generation Function
+        mode = self.dashboard_page.current_mode() # Get which mode is selected on the dashboard AOO, VOO, AAI, VVI
+        params = self.dashboard_page._collect_params(mode) # Collect the parameters for the selected mode
+        html = self._report_header_html("Bradycardia Parameters Report") + f"<h3>Mode: {mode}</h3>" + self._table_from_kv(params) # create a header by passing the title the mode and the parameters as a table
         css = """
             <style>
                 body { background:#fff; color:#000; font: 13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
@@ -535,15 +539,16 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 tr.changed { background:#eee; } 
             </style>
         """
-        html = css + html 
-        ReportPreview(html, self).exec()
+        # add custom css to style the text in the report
+        html = css + html # append the css to html page
+        ReportPreview(html, self).exec() # Show the preview of the report by running the html code
 
-    def open_temporary_params_report(self):
-        mode = self.dashboard_page.current_mode()
-        current = self.dashboard_page._collect_params(mode)
-        saved = self.last_saved_params.get(mode, {})
-        note = "<p style='color:#666;'>Rows highlighted = values changed since last Save.</p>"
-        html = self._report_header_html("Temporary Parameters Report") + f"<h3>Mode: {mode}</h3>" + note + self._diff_table(saved, current)
+    def open_temporary_params_report(self): # Temporary Parameters Report Generation Function
+        mode = self.dashboard_page.current_mode() # check which mode is active
+        current = self.dashboard_page._collect_params(mode) # get the current parameters
+        saved = self.last_saved_params.get(mode, {}) # get the last saved parameters for this report
+        note = "<p style='color:#666;'>Rows highlighted = values changed since last Save.</p>" # add some text to explain the table
+        html = self._report_header_html("Temporary Parameters Report") + f"<h3>Mode: {mode}</h3>" + note + self._diff_table(saved, current) # create a header the same way by passing title, mode, note, and comparison table
         css = """
             <style>
                 body { background:#fff; color:#000; font: 13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
@@ -553,116 +558,117 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
                 tr.changed { background:#eee; } 
             </style>
         """
-        html = css + html 
-        ReportPreview(html, self).exec()
+        # apply the css
+        html = css + html  # append it to the html document
+        ReportPreview(html, self).exec() # display the html code
 
-    def _report_css_simple(self) -> str:
-        # readable on any printer/background
+    def _report_css_simple(self) -> str: # Function to style the histogram and trending report 
         return """
-        <style>
-          body { background:#fff; color:#000; font:13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
-          h2 { font-size:18pt; margin:0 0 8pt 0; }
-          h3 { font-size:14pt; margin:10pt 0 6pt 0; }
-          table { width:100%; border-collapse:collapse; }
-          th, td { border:1px solid #ccc; padding:6pt 8pt; font-size:12pt; text-align:left; }
-          th { background:#333; color:#fff; }
-          /* bar cells */
-          .bar { height:12pt; background:#666; }
-          .barblue { height:12pt; background:#2f6fed; }
-          .muted { color:#555; font-size:11pt; }
-        </style>
-        """
+            <style>
+                body { background:#fff; color:#000; font:13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; } /* 13 points line spacing 1.4 */
+                h2 { font-size:18pt; margin:0 0 8pt 0; }
+                h3 { font-size:14pt; margin:10pt 0 6pt 0; }
+                table { width:100%; border-collapse:collapse; }
+                th, td { border:1px solid #ccc; padding:6pt 8pt; font-size:12pt; text-align:left; }
+                th { background:#333; color:#fff; }
+                .bar { height:12pt; background:#666; }
+                .barblue { height:12pt; background:#2f6fed; }
+                .muted { color:#555; font-size:11pt; }
+            </style>
+        """ # Simple stylesheet styles tables headers body
+    
     
     def _bpm_series(self) -> list[int]:
-        """
-        D1: produce a synthetic BPM series if we have no data.
-        If you later have real samples, store them on self.sessionInfo['hr_series'] and this will use them.
-        """
-        series = (self.sessionInfo or {}).get("hr_series")
+        # If you later have real samples, store them on self.sessionInfo['hr_series'] and this will use them. For now generate random stuff.
+        series = (self.sessionInfo or {}).get("hr_series") # Get the series from the variables
         if series:  # already have real or cached values
-            return series
+            return series 
     
         # synthesize from current UI parameters: center between LRL and URL
-        mode = self.dashboard_page.current_mode()
-        params = self.dashboard_page._collect_params(mode)
-        lrl = int(params.get("LRL", 60))
-        url = int(params.get("URL", 120))
-        center = (lrl + url) // 2
-        spread = max(6, (url - lrl) // 8)
+        mode = self.dashboard_page.current_mode() # get the mode
+        params = self.dashboard_page._collect_params(mode) # get the parameters
+        lrl = int(params.get("LRL", 60)) # lower 
+        url = int(params.get("URL", 120)) # upper
+        center = (lrl + url) // 2 # find center
+        spread = max(6, (url - lrl) // 8) # find the spread of data
     
-        import random
-        random.seed(42)
-        series = [max(lrl, min(url, int(random.gauss(center, spread)))) for _ in range(240)]
+        import random # imprt random
+        random.seed(42) # set seed
+        series = [max(lrl, min(url, int(random.gauss(center, spread)))) for _ in range(240)] # Generate 240 value that are in between url and lrl
         # cache so both reports are consistent in a session
-        self.sessionInfo["hr_series"] = series
-        return series
+        self.sessionInfo["hr_series"] = series # store the series in the session info variable 
+        return series # return the series
     
-    def _bincount(self, values: list[int], edges: list[int]) -> list[int]:
-        """Simple histogram: edges like [30, 40, ... 180] produce len(edges)-1 bins."""
-        counts = [0]*(len(edges)-1)
+    def _bincount(self, values: list[int], edges: list[int]) -> list[int]: # calcultae frequency
+        # Simple histogram: edges like [30, 40, ... 180] produce len(edges)-1 bins.
+        counts = [0]*(len(edges)-1) # set the list
         for v in values:
-            for i in range(len(edges)-1):
-                if edges[i] <= v < edges[i+1]:
-                    counts[i] += 1
-                    break
-        return counts
+            for i in range(len(edges)-1): 
+                if edges[i] <= v < edges[i+1]: # Find where each data point falls
+                    counts[i] += 1 # increase the count
+                    break # break out of the loop
+        return counts # return the list of freq
 
-    def open_rate_histogram_report(self):
-        # data
-        bpm = self._bpm_series()
+    def open_rate_histogram_report(self): # Make histogram tables
+        bpm = self._bpm_series() # data
         edges = list(range(30, 190, 10))  # 30–180 bpm, 10-bpm bins
-        counts = self._bincount(bpm, edges)
-        maxc = max(counts) or 1
+        counts = self._bincount(bpm, edges) # calculate the frequency
+        maxc = max(counts) or 1 # if we do not have a max set atrificial as 1
 
         # rows with simple gray bars
         rows = []
-        for i, c in enumerate(counts):
-            label = f"{edges[i]}–{edges[i+1]-1}"
+        for i, c in enumerate(counts): # loop
+            label = f"{edges[i]}–{edges[i+1]-1}" # generate buckets
             w = int(400 * c / maxc)  # px width
-            rows.append(
+            rows.append( # append each bucket with frequency and pixel width of the table
                 f"<tr><td>{label}</td><td>{c}</td>"
                 f"<td><div class='bar' style='width:{w}px;'></div></td></tr>"
             )
-        table = (
+        table = ( # Create the table header row and add all the other bucket rows
             "<h3>Rate Histogram (beats per minute)</h3>"
             "<table>"
             "<tr><th>Bin (bpm)</th><th>Count</th><th>Distribution</th></tr>"
             + "".join(rows) + "</table>"
         )
-
-        html = self._report_css_simple() + \
-               self._report_header_html("Rate Histogram Report") + \
-               table + "</body></html>"
-        ReportPreview(html, self).exec()
+        # Add css, report header with all information and title, append table 
+        html = self._report_css_simple() + self._report_header_html("Rate Histogram Report") + table + "</body></html>"
+        ReportPreview(html, self).exec() # display html page
 
     def open_trending_report(self):
-        # data → 10 time buckets with average BPM per bucket
-        bpm = self._bpm_series()
+        bpm = self._bpm_series() # data → 10 time buckets with average BPM per bucket
         if not bpm:
             QtWidgets.QMessageBox.information(self, "Trending", "No data available.")
             return
-        buckets = 10
-        size = max(1, len(bpm)//buckets)
-        avgs = [sum(bpm[i*size:(i+1)*size])/max(1,len(bpm[i*size:(i+1)*size])) for i in range(buckets)]
-        maxv = max(avgs) or 1
-
-        # rows with blue bars showing the trend
-        rows = []
-        for i, v in enumerate(avgs):
-            w = int(400 * v / maxv)
+        import math
+        buckets = 10 # number of buckets 
+        size = max(1, len(bpm)//buckets) # number of samples per bucket
+        avgs = [] # Create an empty list to store averages in
+        for i in range(buckets): # for each bucket
+            start = i * size # find the start of the bucket 
+            end = min((i+1) * size, len(bpm)) # find the ned of the bucket and clamp it to the ned of the array
+            chunk = bpm[start:end] # get the chunk of data
+            if not chunk: # check if the chunk is empty
+                break # if emoty then break out of the loop 
+            total = 0 # start a running total for each bucket
+            for value in chunk: # for each value in the chunk
+                total += value # add it to the total
+            average = total / len(chunk) # find the average for each bucket
+            avgs.append(average) # append the average to the array of averages
+        maxv = max(avgs) or 1 # get the maximum of the values
+        rows = [] # rows with blue bars showing the trend
+        for i, v in enumerate(avgs): # for each avg
+            w = int(400 * v / maxv)  # calculate the width
             rows.append(
                 f"<tr><td>T{i+1}</td><td>{v:.1f} bpm</td>"
                 f"<td><div class='barblue' style='width:{w}px;'></div></td></tr>"
-            )
+            ) # Make the header of the table
         table = (
             "<h3>Trending (average BPM per time segment)</h3>"
             "<p class='muted'>D1 synthetic data; will use real telemetry in D2.</p>"
             "<table>"
             "<tr><th>Segment</th><th>Average</th><th>Trend</th></tr>"
             + "".join(rows) + "</table>"
-        )
-
-        html = self._report_css_simple() + \
-               self._report_header_html("Trending Report") + \
-               table + "</body></html>"
-        ReportPreview(html, self).exec()
+        ) # append the generated rows to the table
+        # Add HTML together by adding css, header with title, and table
+        html = self._report_css_simple() + self._report_header_html("Trending Report") + table + "</body></html>"
+        ReportPreview(html, self).exec() # Display html page
