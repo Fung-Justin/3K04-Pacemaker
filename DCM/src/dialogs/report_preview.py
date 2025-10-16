@@ -1,8 +1,8 @@
 from PySide6 import QtWidgets, QtGui, QtPrintSupport
 
-class ReportPreview(QtWidgets.QDialog):
-    def __init__(self, html: str, parent=None):
-        super().__init__(parent)
+class ReportPreview(QtWidgets.QDialog): # Preview page for each of the reports
+    def __init__(self, html: str, parent=None): # pass the html page 
+        super().__init__(parent) 
 
         # Window Settings
         self.setWindowTitle("Report Preview")
@@ -16,12 +16,12 @@ class ReportPreview(QtWidgets.QDialog):
         self.resize(820, 640)
 
         # Declaring Buttons
-        btn_pdf = QtWidgets.QPushButton("Save as PDF")
+        btn_pdf = QtWidgets.QPushButton("Save as PDF") 
         btn_close = QtWidgets.QPushButton("Close")
 
         # Wiring Buttons
         btn_pdf.clicked.connect(self._save_pdf)
-        btn_close.clicked.connect(self.accept)
+        btn_close.clicked.connect(self.accept) # Closes the pop-up
 
         # Creating a layout
         lay = QtWidgets.QVBoxLayout(self)
@@ -32,11 +32,11 @@ class ReportPreview(QtWidgets.QDialog):
         row.addWidget(btn_close)
         lay.addLayout(row)
         
-    def _save_pdf(self):
-        fn, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save PDF", "report.pdf", "PDF Files (*.pdf)")
-        if not fn: return
-        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
-        printer.setOutputFormat(QtPrintSupport.QPrinter.PdfFormat)
-        printer.setOutputFileName(fn)
-        self.doc.print_(printer)
+    def _save_pdf(self): # save pdf function
+        fn, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save PDF", "report.pdf", "PDF Files (*.pdf)") # ask the user where to save the file
+        if not fn: return # if user cancels do nothing
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution) # High Resolution Output
+        printer.setOutputFormat(QtPrintSupport.QPrinter.PdfFormat) # Tell QPrinter function to just create an output file
+        printer.setOutputFileName(fn) # Set the target filename/path for the PDF
+        self.doc.print_(printer) # Render the doc
 

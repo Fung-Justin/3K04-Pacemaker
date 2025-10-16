@@ -2,19 +2,14 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 
 class SetClockDialog(QtWidgets.QDialog):
-    """
-    UI-only dialog to choose a device date & time.
-    Returns accepted QDateTime via .selected when Ok is pressed.
-    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Set Device Clock")
         self.setModal(True)
         self.selected: QtCore.QDateTime | None = None
-
-        # bounds: allow +/- 24h from now (you can relax this later)
+        
         now = QtCore.QDateTime.currentDateTime()
-
+        
         # widgets
         self.dt = QtWidgets.QDateTimeEdit(now)
         self.dt.setDisplayFormat("yyyy-MM-dd  HH:mm:ss")
