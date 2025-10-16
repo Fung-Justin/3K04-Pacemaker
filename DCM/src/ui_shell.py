@@ -137,6 +137,12 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         menu.addSection("Report")
         menu.addAction("Bradycardia Parameters", self.open_brady_params_report)
         menu.addAction("Temporary Parameters", self.open_temporary_params_report)
+
+        menu.addSeparator()                 # a horizontal line
+        menu.addSection("Diagnostics")      # a bold label inside the menu
+        menu.addAction("Rate Histogram", self.open_rate_histogram_report)  # item → handler
+        menu.addAction("Trending", self.open_trending_report)              # item → handler
+
         reports_btn.setMenu(menu)
 
         # Add space between timer and logout button
@@ -548,4 +554,115 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
             </style>
         """
         html = css + html 
+        ReportPreview(html, self).exec()
+
+    def _report_css_simple(self) -> str:
+        # readable on any printer/background
+        return """
+        <style>
+          body { background:#fff; color:#000; font:13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
+          h2 { font-size:18pt; margin:0 0 8pt 0; }
+          h3 { font-size:14pt; margin:10pt 0 6pt 0; }
+          table { width:100%; border-collapse:collapse; }
+          th, td { border:1px solid #ccc; padding:6pt 8pt; font-size:12pt; text-align:left; }
+          th { background:#333; color:#fff; }
+          /* bar cells */
+          .bar { height:12pt; background:#666; }
+          .barblue { height:12pt; background:#2f6fed; }
+          .muted { color:#555; font-size:11pt; }
+        </style>
+        """
+    
+    def _bpm_series(self) -> list[int]:
+        """
+        D1: produce a synthetic BPM series if we have no data.
+        If you later have real samples, store them on self.sessionInfo['hr_series'] and this will use them.
+        """
+        series = (self.sessionInfo or {}).get("hr_series")
+        if series:  # already have real or cached values
+            return series
+    
+        # synthesize from current UI parameters: center between LRL and URL
+        mode = self.dashboard_page.current_mode()
+        params = self.dashboard_page._collect_params(mode)
+        lrl = int(params.get("LRL", 60))
+        url = int(params.get("URL", 120))
+        center = (lrl + url) // 2
+        spread = max(6, (url - lrl) // 8)
+    
+        import random
+        random.seed(42)
+        series = [max(lrl, min(url, int(random.gauss(center, spread)))) for _ in range(240)]
+        # cache so both reports are consistent in a session
+        self.sessionInfo["hr_series"] = series
+        return series
+    
+    def _bincount(self, values: list[int], edges: list[int]) -> list[int]:
+        """Simple histogram: edges like [30, 40, ... 180] produce len(edges)-1 bins."""
+        counts = [0]*(len(edges)-1)
+        for v in values:
+            for i in range(len(edges)-1):
+                if edges[i] <= v < edges[i+1]:
+                    counts[i] += 1
+                    break
+        return counts
+
+    def open_rate_histogram_report(self):
+        # data
+        bpm = self._bpm_series()
+        edges = list(range(30, 190, 10))  # 30–180 bpm, 10-bpm bins
+        counts = self._bincount(bpm, edges)
+        maxc = max(counts) or 1
+
+        # rows with simple gray bars
+        rows = []
+        for i, c in enumerate(counts):
+            label = f"{edges[i]}–{edges[i+1]-1}"
+            w = int(400 * c / maxc)  # px width
+            rows.append(
+                f"<tr><td>{label}</td><td>{c}</td>"
+                f"<td><div class='bar' style='width:{w}px;'></div></td></tr>"
+            )
+        table = (
+            "<h3>Rate Histogram (beats per minute)</h3>"
+            "<table>"
+            "<tr><th>Bin (bpm)</th><th>Count</th><th>Distribution</th></tr>"
+            + "".join(rows) + "</table>"
+        )
+
+        html = self._report_css_simple() + \
+               self._report_header_html("Rate Histogram Report") + \
+               table + "</body></html>"
+        ReportPreview(html, self).exec()
+
+    def open_trending_report(self):
+        # data → 10 time buckets with average BPM per bucket
+        bpm = self._bpm_series()
+        if not bpm:
+            QtWidgets.QMessageBox.information(self, "Trending", "No data available.")
+            return
+        buckets = 10
+        size = max(1, len(bpm)//buckets)
+        avgs = [sum(bpm[i*size:(i+1)*size])/max(1,len(bpm[i*size:(i+1)*size])) for i in range(buckets)]
+        maxv = max(avgs) or 1
+
+        # rows with blue bars showing the trend
+        rows = []
+        for i, v in enumerate(avgs):
+            w = int(400 * v / maxv)
+            rows.append(
+                f"<tr><td>T{i+1}</td><td>{v:.1f} bpm</td>"
+                f"<td><div class='barblue' style='width:{w}px;'></div></td></tr>"
+            )
+        table = (
+            "<h3>Trending (average BPM per time segment)</h3>"
+            "<p class='muted'>D1 synthetic data; will use real telemetry in D2.</p>"
+            "<table>"
+            "<tr><th>Segment</th><th>Average</th><th>Trend</th></tr>"
+            + "".join(rows) + "</table>"
+        )
+
+        html = self._report_css_simple() + \
+               self._report_header_html("Trending Report") + \
+               table + "</body></html>"
         ReportPreview(html, self).exec()
