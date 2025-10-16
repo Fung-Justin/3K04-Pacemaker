@@ -272,13 +272,42 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
 
     def _collect_params(self, mode: str) -> dict: # Collect parameters from current form
         if mode == "AOO": 
-            return dict(LRL=self.aoo_LRL.value(), URL=self.aoo_URL.value(), AtrialAmp=self.aoo_VAmp.value(), AtrialPW=self.aoo_PW.value()) # AOO
+            return dict(
+                LRL=self.aoo_LRL.value(), 
+                URL=self.aoo_URL.value(), 
+                AtrialAmp=self.aoo_VAmp.value(), 
+                AtrialPW=self.aoo_PW.value()
+            ) # AOO
         if mode == "VOO": 
-            return dict(LRL=self.voo_LRL.value(), URL=self.voo_URL.value(), VentAmp=self.voo_VAmp.value(), VentPW=self.voo_PW.value()) # VOO
+            return dict(
+                LRL=self.voo_LRL.value(), 
+                URL=self.voo_URL.value(), 
+                VentAmp=self.voo_VAmp.value(), 
+                VentPW=self.voo_PW.value()
+            ) # VOO
         if mode == "AAI":
-            return dict(LRL=self.aai_LRL.value(), URL=self.aai_URL.value(), AtrialAmp=self.aai_VAmp.value(), AtrialPW=self.aai_PW.value(), AS=self.aai_AS.value(), ARP=self.aai_ARP.value(), PVARP=self.aai_PVARP.value(), Hys=self.aai_Hys.value(), RS=self.aai_RS.value()) # AAI
+            return dict(
+                LRL=self.aai_LRL.value(), 
+                URL=self.aai_URL.value(), 
+                AtrialAmp=self.aai_VAmp.value(), 
+                AtrialPW=self.aai_PW.value(), 
+                AS=self.aai_AS.value(), 
+                ARP=self.aai_ARP.value(), 
+                PVARP=self.aai_PVARP.value(), 
+                Hys=self.aai_Hys.value(), 
+                RS=self.aai_RS.value()
+            ) # AAI
         # VVI
-        return dict(LRL=self.vvi_LRL.value(), URL=self.vvi_URL.value(), VentAmp=self.vvi_VAmp.value(), VentPW=self.vvi_PW.value(), VS=self.vvi_VS.value(), VRP=self.vvi_VRP.value(), Hys=self.vvi_Hys.value(), RS=self.vvi_RS.value())
+        return dict(
+            LRL=self.vvi_LRL.value(), 
+            URL=self.vvi_URL.value(), 
+            VentAmp=self.vvi_VAmp.value(), 
+            VentPW=self.vvi_PW.value(), 
+            VS=self.vvi_VS.value(), 
+            VRP=self.vvi_VRP.value(), 
+            Hys=self.vvi_Hys.value(), 
+            RS=self.vvi_RS.value()
+        )
     
     def reset_all(self):
         # rebuild each form to constructor defaults

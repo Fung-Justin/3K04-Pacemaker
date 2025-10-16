@@ -1,12 +1,15 @@
-from PySide6 import QtWidgets, QtGui 
+from PySide6 import QtWidgets, QtGui, QtPrintSupport
 
 class ReportPreview(QtWidgets.QDialog):
     def __init__(self, html: str, parent=None):
-        super().__init(parent)
+        super().__init__(parent)
 
         # Window Settings
         self.setWindowTitle("Report Preview")
         self.doc = QtGui.QTextDocument(self)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.doc.setDefaultFont(font)
         self.doc.setHtml(html)
         view = QtWidgets.QTextBrowser()
         view.setDocument(self.doc)
@@ -32,8 +35,8 @@ class ReportPreview(QtWidgets.QDialog):
     def _save_pdf(self):
         fn, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save PDF", "report.pdf", "PDF Files (*.pdf)")
         if not fn: return
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        printer.setOutputFormat(QtPrintSupport.QPrinter.PdfFormat)
         printer.setOutputFileName(fn)
         self.doc.print_(printer)
 

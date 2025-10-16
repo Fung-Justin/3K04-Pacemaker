@@ -16,7 +16,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self.resize(900, 600) # Set initial window size
 
         self.appInfo = {"applicationModelNumber": self.application_model_number(), "version": self.application_software_rev_nu(), "institution": self.institution_name(), "dcmSerial": self.dcm_serial_num()}
-        self.sessionInfo = {"connected": False, "device_id": None, "pending_set_time": None}
+        self.sessionInfo = {"connected": False, "device_id": {"model": "Pacemaker", "serial": "COM1"}, "pending_set_time": None}
         self.last_saved_params = {} # Used for printing pdf
 
         # Model / store
@@ -429,7 +429,10 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         self._stop_telemetry_stub() # stop all telemetry
         self.sessionInfo = { # Clear session information
             "connected": False,
-            "device_id": None,
+            "device_id": {
+                "model": "Pacemaker",
+                "serial": "COM1"
+            },
             "pending_set_time": None,
             "started_at": None,
             "last_seen": None,
@@ -468,20 +471,20 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         header_report = {
             'institution': self.appInfo['institution'],
             'printed_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'device': {self.sessionInfo['device_id']['model']} + "/" + {self.sessionInfo['device_id']['serial']},
+            'device': self.sessionInfo['device_id']['model'] + " / " + self.sessionInfo['device_id']['serial'],
             'dcm': self.appInfo['dcmSerial'],
-            'app': {self.appInfo['modelNumber']} + " v" + {self.appInfo['version']},
+            'app': self.appInfo['applicationModelNumber'] + " v" + self.appInfo['version'],
             'name': report_name
         }
         return f"""
             <div style="border-bottom:1px solid #aaa;margin-bottom:10px;padding-bottom:6px;">
-                <h2 style="margin:0 0 6px 0;">{h['name']}</h2>
+                <h2 style="margin:0 0 6px 0;">{header_report['name']}</h2>
                 <table style="font-size:12px;">
-                    <tr><td><b>Institution</b></td><td>{h['institution']}</td></tr>
-                    <tr><td><b>Printed</b></td><td>{h['printed_at']}</td></tr>
-                    <tr><td><b>Device</b></td><td>{h['device']}</td></tr>
-                    <tr><td><b>DCM Serial</b></td><td>{h['dcm']}</td></tr>
-                    <tr><td><b>Application</b></td><td>{h['app']}</td></tr>
+                    <tr><td><b>Institution</b></td><td>{header_report['institution']}</td></tr>
+                    <tr><td><b>Printed</b></td><td>{header_report['printed_at']}</td></tr>
+                    <tr><td><b>Device</b></td><td>{header_report['device']}</td></tr>
+                    <tr><td><b>DCM Serial</b></td><td>{header_report['dcm']}</td></tr>
+                    <tr><td><b>Application</b></td><td>{header_report['app']}</td></tr>
                 </table>
             </div>
         """
@@ -517,12 +520,32 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         mode = self.dashboard_page.current_mode()
         params = self.dashboard_page._collect_params(mode)
         html = self._report_header_html("Bradycardia Parameters Report") + f"<h3>Mode: {mode}</h3>" + self._table_from_kv(params)
+        css = """
+            <style>
+                body { background:#fff; color:#000; font: 13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
+                table { width:100%; border-collapse:collapse; }
+                th, td { border:1px solid #ccc; padding:6pt 8pt; font-size:12pt; }
+                th { background:#333; color:#fff; text-align:left; }
+                tr.changed { background:#eee; } 
+            </style>
+        """
+        html = css + html 
         ReportPreview(html, self).exec()
 
     def open_temporary_params_report(self):
         mode = self.dashboard_page.current_mode()
         current = self.dashboard_page._collect_params(mode)
         saved = self.last_saved_params.get(mode, {})
-        note = "<p style='color:#666;font-size:12px;'>Rows highlighted = values changed since last Save.</p>"
+        note = "<p style='color:#666;'>Rows highlighted = values changed since last Save.</p>"
         html = self._report_header_html("Temporary Parameters Report") + f"<h3>Mode: {mode}</h3>" + note + self._diff_table(saved, current)
+        css = """
+            <style>
+                body { background:#fff; color:#000; font: 13pt/1.4 -apple-system, Segoe UI, Arial, sans-serif; }
+                table { width:100%; border-collapse:collapse; }
+                th, td { border:1px solid #ccc; padding:6pt 8pt; font-size:12pt; }
+                th { background:#333; color:#fff; text-align:left; }
+                tr.changed { background:#eee; } 
+            </style>
+        """
+        html = css + html 
         ReportPreview(html, self).exec()
