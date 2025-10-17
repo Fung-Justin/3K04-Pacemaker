@@ -196,11 +196,11 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         self.aai_URL = QtWidgets.QSpinBox(minimum=50, maximum=175); self.aai_URL.setValue(120) # Upper Rate Limit in bpm
         self.aai_VAmp = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.5, maximum=5.0, singleStep=0.01); self.aai_VAmp.setValue(3.5) # Atrial Amplitude in V
         self.aai_PW  = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.05, maximum=1.90, singleStep=0.01); self.aai_PW.setValue(0.4) # Atrial Pulse Width in ms
-        self.aai_AS = QtWidgets.QSpinBox(minimum=0, maximum=5); self.aai_AS.setValue(2) # Atrial Sensitivity in mV
+        self.aai_AS = QtWidgets.QSpinBox(minimum=0, maximum=5); self.aai_AS.setValue(0.75) # Atrial Sensitivity in mV
         self.aai_ARP = QtWidgets.QSpinBox(minimum=150, maximum=500); self.aai_ARP.setValue(250) # ARP in ms
         self.aai_PVARP = QtWidgets.QSpinBox(minimum=150, maximum=500); self.aai_PVARP.setValue(250) # PVARP in ms
         self.aai_Hys = QtWidgets.QSpinBox(minimum=0, maximum=50); self.aai_Hys.setValue(0) # Hysteresis in bpm
-        self.aai_RS = QtWidgets.QSpinBox(minimum=100, maximum=500); self.aai_RS.setValue(250) # Rate Smoothing in ms
+        self.aai_RS = QtWidgets.QSpinBox(minimum=100, maximum=500); self.aai_RS.setValue(0) # Rate Smoothing in ms
 
         f.addRow("Lower Rate Limit (bpm)", self.aai_LRL) # add field
         f.addRow("Upper Rate Limit (bpm)", self.aai_URL) # add field
@@ -222,10 +222,10 @@ class DashboardPage(QtWidgets.QWidget): # Dashboard for pacemaker parameters
         self.vvi_URL = QtWidgets.QSpinBox(minimum=50, maximum=175); self.vvi_URL.setValue(120) # Upper Rate Limit in bpm
         self.vvi_VAmp = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.5, maximum=5.0, singleStep=0.01); self.vvi_VAmp.setValue(3.5) # Ventricular Amplitude in V
         self.vvi_PW  = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.05, maximum=1.90, singleStep=0.01); self.vvi_PW.setValue(0.4) # Ventricular Pulse Width in ms
-        self.vvi_VS = QtWidgets.QSpinBox(minimum=0, maximum=5); self.aai_AS.setValue(2) # Ventricular Sensitivity in mV
+        self.vvi_VS = QtWidgets.QSpinBox(minimum=0, maximum=5); self.aai_AS.setValue(2.5) # Ventricular Sensitivity in mV
         self.vvi_VRP = QtWidgets.QSpinBox(minimum=150, maximum=500); self.vvi_VRP.setValue(250) # VRP in ms
         self.vvi_Hys = QtWidgets.QSpinBox(minimum=0, maximum=50); self.vvi_Hys.setValue(0) # Hysteresis in bpm
-        self.vvi_RS = QtWidgets.QSpinBox(minimum=100, maximum=500); self.vvi_RS.setValue(250) # Rate Smoothing in ms
+        self.vvi_RS = QtWidgets.QSpinBox(minimum=100, maximum=500); self.vvi_RS.setValue(0) # Rate Smoothing in ms
 
         f.addRow("Lower Rate Limit (bpm)", self.vvi_LRL) # add field
         f.addRow("Upper Rate Limit (bpm)", self.vvi_URL) # add field
