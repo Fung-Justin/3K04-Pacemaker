@@ -269,7 +269,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         
           # Stop the timer if hiding the top toolbar
         if toolbar_attr == "top_toolbar" and hasattr(self, "_timer"):
-         self._timer.stop()
+            self._timer.stop()
 
         effect = QtWidgets.QGraphicsOpacityEffect(toolbar) # create opacity effect
         effect.setOpacity(1.0) # start fully opaque
