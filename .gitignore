@@ -19,5 +19,6 @@ sccprj/
 .DS_Store
 Thumbs.db
 
-/DCM/src/users.json
+DCM/src/users.json
 DCM/src.zip
+DCM/src/saved_Params.txt
