@@ -66,6 +66,8 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
     def _on_params_saved(self, mode, params): # Handle saving parameters
         self.last_saved_params[mode] = dict(params)
         print(f"[DEBUG] Saved {mode} -> {params}") # debug print
+        file = open("saved_Params.txt", 'a')
+        file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " " + mode + " -> " + str(params) + '\n')
 
     def create_top_toolbar(self, username: str): # Create the top toolbar function
         if hasattr(self, "top_toolbar") and self.top_toolbar: 
@@ -269,7 +271,7 @@ class UIShell(QtWidgets.QMainWindow): # Main application window
         
           # Stop the timer if hiding the top toolbar
         if toolbar_attr == "top_toolbar" and hasattr(self, "_timer"):
-         self._timer.stop()
+            self._timer.stop()
 
         effect = QtWidgets.QGraphicsOpacityEffect(toolbar) # create opacity effect
         effect.setOpacity(1.0) # start fully opaque
